@@ -1,0 +1,13 @@
+- name: Base Firewall Security (remove iptable)
+  tags: firewall
+  apt:
+    name: iptables
+    state: absent
+    autoremove: true
+
+- name: Base Firewall Security (Add nftables)
+  tags: firewall
+  apt:
+    name: nftables
+    state: latest
+    
