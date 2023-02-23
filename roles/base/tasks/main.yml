@@ -1,13 +1,44 @@
-- name: Base Firewall Security (remove iptable)
-  tags: firewall
+- name: Base Firewall Security (remove unwanted defaults)
+  tags: baseline-security
   apt:
-    name: iptables
+    name: 
+      - iptables
     state: absent
     autoremove: true
 
-- name: Base Firewall Security (Add nftables)
-  tags: firewall
+- name: Base Security (install)
+  tags: baseline-security
   apt:
-    name: nftables
+    name: 
+      - nftables
+      - fail2ban
     state: latest
     
+- name: Docker Repository Setup (Install Packages)
+  tags: docker
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: latest
+
+- name: Docker offical GPG key
+  - tags: docker
+    shell: |
+      mkdir -m 0755 -p /etc/apt/keyrings
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+- name: Docker Install
+  - tags: docker
+    apt:
+      name:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
