@@ -13,6 +13,24 @@
       - nftables
       - fail2ban
     state: latest
+
+## https://wiki.archlinux.org/title/nftables
+- name: nftables default setup
+  tags: baseline-security
+  shell: |
+    nft flush ruleset
+    nft add table ip IPv4
+    nft 'add chain ip IPv4 inbound_IPv4 {type filter hook input priority 0; policy drop; }'
+    nft 'add rules ip IPv4 inbound_IPv4 ct state vmap { established : accept, related : accept, invalid : drop}
+
+    
+
+- name: fail2ban default setup
+  tags: baseline-security
+  shell: |
+    
+
+
     
 - name: Docker Repository Setup (Install Packages)
   tags: docker
