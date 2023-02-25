@@ -19,15 +19,20 @@
   tags: baseline-security
   shell: |
     nft flush ruleset
-    nft add table ip IPv4
+    nft 'add table ip IPv4'
     nft 'add chain ip IPv4 inbound_IPv4 {type filter hook input priority 0; policy drop; }'
-    nft 'add rules ip IPv4 inbound_IPv4 ct state vmap { established : accept, related : accept, invalid : drop}'
-
+    nft 'add rule ip IPv4 inbound_IPv4 ct state established,related accept'
+    nft 'add rule ip IPv4 inbound_IPv4 iif lo accept'
+    nft 'add rules ip IPv4 inbound_IPv4 ip saddr 192.168.1.0/24 tcp dport 22'
+    nft 'add chain ip IPv4 outbound_IPv4 {type filter hook input priority 0; policy accept; }'
+    nft 'add chain ip IPv4 forward_IPv4  {type filter hook input priority 0; policy drop; }'
+    mv "/etc/nftables.conf" "/etc/nftables.conf.bak"
+    nft -s list ruleset | tee /etc/nftables.conf
     
 
-##- name: fail2ban default setup
-##  tags: baseline-security
-##  shell: |
+- name: fail2ban default setup
+  tags: baseline-security
+  shell: |
 
 - name: Docker Repository Setup (Install Packages)
   tags: docker
