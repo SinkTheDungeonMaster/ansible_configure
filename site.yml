@@ -3,7 +3,7 @@
 - hosts: all
   become: true
   pre_tasks:
-  
+
   - name: Update All Systems
     tags: always
     apt:
@@ -12,8 +12,7 @@
       autoremove: true
       autoclean: true
 
-- host: all
+- hosts: all
   become: true
   roles:
-    - base
-    
+    - base_system

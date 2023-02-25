@@ -1,0 +1,57 @@
+- name: Base Firewall Security (remove unwanted defaults)
+  tags: baseline_security
+  apt:
+    name: 
+      - iptables
+    state: absent
+    autoremove: true
+
+- name: Base Security (install)
+  tags: baseline_security
+  apt:
+    name: 
+      - nftables
+      - fail2ban
+    state: latest
+
+## https://wiki.archlinux.org/title/nftables
+- name: nftables default setup
+  tags: baseline-security
+  shell: |
+    nft flush ruleset
+    nft add table ip IPv4
+    nft 'add chain ip IPv4 inbound_IPv4 {type filter hook input priority 0; policy drop; }'
+    nft 'add rules ip IPv4 inbound_IPv4 ct state vmap { established : accept, related : accept, invalid : drop}'
+
+    
+
+##- name: fail2ban default setup
+##  tags: baseline-security
+##  shell: |
+
+- name: Docker Repository Setup (Install Packages)
+  tags: docker
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: latest
+
+- name: Docker offical GPG key
+  tags: docker
+  shell: |
+    mkdir -m 0755 -p /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    echo  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+- name: Docker Install
+  tags: docker
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
