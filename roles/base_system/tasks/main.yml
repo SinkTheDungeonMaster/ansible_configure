@@ -12,6 +12,7 @@
     name: 
       - nftables
       - fail2ban
+      - iptables-nft
     state: latest
 
 ## https://wiki.archlinux.org/title/nftables
