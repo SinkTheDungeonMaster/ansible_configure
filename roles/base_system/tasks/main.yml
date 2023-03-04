@@ -1,34 +1,23 @@
-- name: Base Firewall Security (remove unwanted defaults)
-  tags: baseline_security
-  apt:
-    name: 
-      - iptables
-    state: absent
-    autoremove: true
-
 - name: Base Security (install)
   tags: baseline_security
   apt:
     name: 
-      - nftables
       - fail2ban
-      - iptables-nft
     state: latest
 
 ## https://wiki.archlinux.org/title/nftables
 - name: nftables default setup
   tags: baseline-security
   shell: |
-    nft flush ruleset
-    nft 'add table ip IPv4'
-    nft 'add chain ip IPv4 inbound_IPv4 {type filter hook input priority 0; policy drop; }'
-    nft 'add rule ip IPv4 inbound_IPv4 ct state established,related accept'
-    nft 'add rule ip IPv4 inbound_IPv4 iif lo accept'
-    nft 'add rules ip IPv4 inbound_IPv4 ip saddr 192.168.1.0/24 tcp dport 22'
-    nft 'add chain ip IPv4 outbound_IPv4 {type filter hook input priority 0; policy accept; }'
-    nft 'add chain ip IPv4 forward_IPv4  {type filter hook input priority 0; policy drop; }'
-    mv "/etc/nftables.conf" "/etc/nftables.conf.bak"
-    nft -s list ruleset | tee /etc/nftables.conf
+    iptables -F
+    iptables -X
+    iptables -Z
+    iptables -P INPUT DROP
+    iptables -P FORWARD DROP
+    iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    iptables -A INPUT -i lo -j ACCEPT
+    iptables -A INPUT -p tcp -s 192.168.1.0/24 --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+    netfilter-persistent save
     
 
 - name: fail2ban default setup
